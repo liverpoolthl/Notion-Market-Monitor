@@ -1,93 +1,17 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Global Market Monitor</title>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Global Market Monitor</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#0b1020;color:#f3f6ff;font-family:Arial,sans-serif}
-main{max-width:1300px;margin:auto;padding:28px 18px}
-h1{font-size:28px;margin:8px 0}
-.subtitle{color:#9eabc5;font-size:13px;margin-bottom:25px}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.card{background:#151d31;border:1px solid #28344e;border-radius:14px;padding:14px;min-width:0}
-h2{font-size:17px;margin:2px 0 12px}
-.chart{height:360px}
-.wide{margin-top:16px}
-.compare{height:520px}
-.note{color:#9eabc5;font-size:12px;line-height:1.7}
-a{color:#a8c7ff}
-@media(max-width:760px){.grid{grid-template-columns:1fr}.chart{height:320px}}
-</style>
-</head>
-<body>
-<main>
-<h1>Global Market Monitor</h1>
-<div class="subtitle">KOSPI · KOSDAQ · NASDAQ · NYSE | 한국·미국 주식시장</div>
-<div class="grid">
-<section class="card"><h2>KOSPI</h2><div class="chart" id="kospi"></div></section>
-<section class="card"><h2>KOSDAQ</h2><div class="chart" id="kosdaq"></div></section>
-<section class="card"><h2>NASDAQ</h2><div class="chart" id="nasdaq"></div></section>
-<section class="card"><h2>NYSE Composite</h2><div class="chart" id="nyse"></div></section>
-</div>
-<section class="card wide">
-<h2>4개 시장 성과 비교</h2>
-<div class="compare" id="comparison"></div>
-</section>
-<p class="note">시세는 거래소 정책에 따라 지연될 수 있습니다. 차트가 표시되지 않으면 <a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView</a>에서 확인하세요.</p>
-</main>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#151d31;--line:#28344e;--muted:#9eabc5;--text:#f3f6ff;--accent:#81a8ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Pretendard,'Noto Sans KR',Arial,sans-serif}.wrap{max-width:1320px;margin:auto;padding:30px 22px 55px}header{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:22px}h1{font-size:29px;letter-spacing:-.8px;margin:0 0 8px}.sub{color:var(--muted);font-size:13px}.tag{border:1px solid #37506b;color:#b9d4ff;border-radius:30px;padding:9px 13px;font-size:12px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}.panel h2{font-size:16px;margin:0 0 4px}.panel p{color:var(--muted);font-size:12px;margin:0 0 13px}.price{font-size:25px;font-weight:700;margin:12px 0 3px}.delta{font-size:13px;font-weight:600}.up{color:#38d6a3}.down{color:#ff788b}.neutral{color:var(--muted)}.chart{height:250px;position:relative}.wide{margin-top:17px}.compare{height:370px;position:relative}.row{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.controls{display:flex;gap:5px;flex-wrap:wrap;margin:10px 0 14px}button{border:1px solid #33425f;background:#1b2741;color:#c8d6f3;border-radius:8px;padding:7px 11px;cursor:pointer;font-size:12px}button.active{background:#365c9e;color:white;border-color:#648ef0}.notes{font-size:12px;line-height:1.8;color:var(--muted);margin-top:18px}.status{font-size:11px;color:var(--muted)}.empty{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;color:#aab9d5;padding:25px;font-size:13px;line-height:1.7}canvas{width:100%!important;height:100%!important}a{color:#b6ceff}@media(max-width:760px){.wrap{padding:20px 12px}header{flex-direction:column;align-items:start}.grid{grid-template-columns:1fr}h1{font-size:24px}}
+</style></head><body><main class="wrap"><header><div><div class="sub" style="letter-spacing:2px;color:#81a8ff;font-weight:700">INVESTMENT INTELLIGENCE</div><h1>Global Market Monitor</h1><div class="sub">KOSPI · KOSDAQ · NASDAQ · NYSE | 한국·미국 시장 통합 모니터링</div></div><div class="tag" id="updateStatus">시장 데이터 불러오는 중…</div></header>
+<section class="grid" id="grid"></section><section class="panel wide"><div class="row"><div><h2>4개 시장 성과 비교</h2><p>선택 기간의 시작값을 0%로 정규화한 수익률 비교</p></div><div class="status">지수 단위가 아닌 수익률(%) 비교</div></div><div class="controls" id="controls"></div><div class="compare"><canvas id="compareChart"></canvas><div class="empty" id="compareEmpty">데이터가 없습니다. GitHub Actions에서 Update market charts를 실행하세요.</div></div></section><div class="notes">데이터: Yahoo Finance 비공식 시세(yfinance) · GitHub Actions는 약 15분마다 갱신을 시도하며 실제 실행 간격은 달라질 수 있습니다. 장중 데이터 지연, 휴장, 공급자 제한이 있을 수 있습니다. 투자 판단용 실시간 시세가 아닙니다.<br>한국 KOSPI (^KS11) · KOSDAQ (^KQ11) · 미국 NASDAQ Composite (^IXIC) · NYSE Composite (^NYA). 갱신 실패 시 마지막 정상 데이터를 표시합니다.</div></main>
 <script>
-function addWidget(id,symbols,scale){
-const root=document.getElementById(id);
-const wrap=document.createElement("div");
-wrap.className="tradingview-widget-container";
-wrap.style.cssText="height:100%;width:100%";
-const inner=document.createElement("div");
-inner.className="tradingview-widget-container__widget";
-inner.style.cssText="height:100%;width:100%";
-wrap.appendChild(inner);
-root.appendChild(wrap);
-const script=document.createElement("script");
-script.type="text/javascript";
-script.src="https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js";
-script.async=true;
-script.textContent=JSON.stringify({
-symbols:symbols,
-chartOnly:false,
-width:"100%",
-height:"100%",
-locale:"kr",
-colorTheme:"dark",
-autosize:true,
-showVolume:false,
-showMA:false,
-hideDateRanges:false,
-hideMarketStatus:false,
-hideSymbolLogo:false,
-scalePosition:"right",
-scaleMode:scale,
-fontFamily:"Arial, sans-serif",
-fontSize:"12",
-noTimeScale:false,
-valuesTracking:"1",
-changeMode:"price-and-percent",
-chartType:"area",
-lineWidth:2,
-lineType:0
-});
-wrap.appendChild(script);
-}
-addWidget("kospi",[["KOSPI","KRX:KOSPI|1D"]],"Normal");
-addWidget("kosdaq",[["KOSDAQ","KRX:KOSDAQ|1D"]],"Normal");
-addWidget("nasdaq",[["NASDAQ","NASDAQ:IXIC|1D"]],"Normal");
-addWidget("nyse",[["NYSE","NYSE:NYA|1D"]],"Normal");
-addWidget("comparison",[
-["KOSPI","KRX:KOSPI|1M"],
-["KOSDAQ","KRX:KOSDAQ|1M"],
-["NASDAQ","NASDAQ:IXIC|1M"],
-["NYSE","NYSE:NYA|1M"]
-],"Percentage");
-</script>
-</body>
-</html>
+const names=['KOSPI','KOSDAQ','NASDAQ','NYSE'];const descriptions=['한국 유가증권시장 · 종합지수','한국 코스닥시장 · 종합지수','미국 나스닥 · 종합지수','미국 뉴욕증권거래소 · 종합지수'];const colors=['#75a7ff','#e5ae69','#42d8bd','#c69bff'];const periods=[['1D','1일'],['1W','1주'],['1M','1개월'],['3M','3개월'],['1Y','1년'],['ALL','전체']];let selected='1M',markets={},charts={},comparison;
+const fmt=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:2,minimumFractionDigits:2});
+function valid(arr){return (arr||[]).filter(p=>Array.isArray(p)&&p.length===2&&Number.isFinite(Number(p[1]))).map(p=>[Date.parse(p[0]),Number(p[1])]).filter(p=>Number.isFinite(p[0])).sort((a,b)=>a[0]-b[0]);}
+function subset(m,period){let intr=valid(m.intraday),daily=valid(m.daily),all=period==='1D'&&intr.length?intr:daily;if(!all.length)return[];let end=all[all.length-1][0],dur={'1D':86400000,'1W':7*86400000,'1M':30*86400000,'3M':90*86400000,'1Y':365*86400000,'ALL':Infinity}[period];let pts=all.filter(p=>end-p[0]<=dur);return pts.length>=2?pts:all.slice(-Math.min(2,all.length));}
+function mkChart(canvas,labels,datasets,percent=false){return new Chart(canvas,{type:'line',data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,animation:false,interaction:{intersect:false,mode:'index'},plugins:{legend:{display:datasets.length>1,labels:{color:'#c9d5ed',usePointStyle:true}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+(percent?c.parsed.y.toFixed(2)+'%':fmt(c.parsed.y))}}},scales:{x:{ticks:{color:'#8292b0',maxTicksLimit:6,maxRotation:0},grid:{color:'rgba(150,165,195,.06)'}},y:{ticks:{color:'#8292b0',callback:v=>percent?v+'%':Number(v).toLocaleString()},grid:{color:'rgba(150,165,195,.12)'}}}}});}
+function draw(){names.forEach((name,i)=>{let m=markets[name]||{},pts=subset(m,selected),canvas=document.getElementById('chart-'+name),empty=document.getElementById('empty-'+name);if(charts[name])charts[name].destroy();if(pts.length<2){canvas.style.display='none';empty.style.display='flex';return;}canvas.style.display='block';empty.style.display='none';charts[name]=mkChart(canvas,pts.map(p=>new Date(p[0]).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})),[{label:name,data:pts.map(p=>p[1]),borderColor:colors[i],backgroundColor:colors[i]+'15',fill:true,borderWidth:2,pointRadius:0,tension:.15}]);});
+let series=names.map((n,i)=>({name:n,color:colors[i],pts:subset(markets[n]||{},selected)})).filter(x=>x.pts.length>1);if(comparison)comparison.destroy();let empty=document.getElementById('compareEmpty'),canvas=document.getElementById('compareChart');if(!series.length){canvas.style.display='none';empty.style.display='flex';return;}canvas.style.display='block';empty.style.display='none';let timeline=[...new Set(series.flatMap(s=>s.pts.map(p=>p[0])))].sort((a,b)=>a-b);let datasets=series.map(s=>{let base=s.pts[0][1],idx=0,last=null;let data=timeline.map(t=>{while(idx<s.pts.length&&s.pts[idx][0]<=t){last=s.pts[idx][1];idx++;}return last===null?null:100*(last/base-1)});return{label:s.name,data,borderColor:s.color,borderWidth:2,pointRadius:0,tension:.1,spanGaps:true};});comparison=mkChart(canvas,timeline.map(t=>new Date(t).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})),datasets,true);}
+function init(data){markets=data.markets||{};const grid=document.getElementById('grid');grid.innerHTML=names.map((n,i)=>{let m=markets[n]||{},delta=Number(m.changePct||0),cl=delta>0?'up':delta<0?'down':'neutral';return '<article class="panel"><h2>'+n+'</h2><p>'+descriptions[i]+'</p><div class="row"><div><div class="price">'+(Number.isFinite(Number(m.price))&&m.price!=null?fmt(m.price):'데이터 대기')+'</div><div class="delta '+cl+'">'+(m.price!=null?(delta>0?'+':'')+fmt(m.change)+' ('+(delta>0?'+':'')+delta.toFixed(2)+'%)':'시세 수집 대기')+'</div></div><span class="status">'+(m.status==='stale'?'마지막 정상 시세':m.asof?'시세: '+m.asof.slice(0,16).replace('T',' '):'미수집')+'</span></div><div class="chart"><canvas id="chart-'+n+'"></canvas><div class="empty" id="empty-'+n+'">데이터가 아직 없습니다.<br>GitHub Actions에서 수집 작업을 실행하세요.</div></div></article>';}).join('');document.getElementById('controls').innerHTML=periods.map(([k,v])=>'<button data-period="'+k+'" class="'+(selected===k?'active':'')+'">'+v+'</button>').join('');document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{selected=b.dataset.period;document.querySelectorAll('[data-period]').forEach(x=>x.classList.toggle('active',x===b));draw();});let good=names.filter(n=>markets[n]&&markets[n].price!=null).length;document.getElementById('updateStatus').textContent=good+'/4개 시장 데이터 · 갱신 '+(data.updatedAt?new Date(data.updatedAt).toLocaleString('ko-KR'):'대기');draw();}
+fetch('market.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('market.json not found');return r.json()}).then(init).catch(err=>{init({markets:{}});document.getElementById('updateStatus').textContent='데이터 설정 필요 · GitHub Actions 실행';console.error(err);});
+</script></body></html>
